@@ -19,6 +19,7 @@ class RpmRecord(Base):
     ac_servicing = Column(String(255), nullable=True)  # e.g., 2026-05-15 or notes
     housekeeping = Column(String(100), nullable=True)
     inspection_status = Column(String(50), default="Pending", nullable=False, index=True)  # Done, Pending, In Progress
+    inspection_date = Column(String(50), nullable=True)  # Date of submission
     
     remarks = Column(Text, nullable=True)
     sort_order = Column(Integer, default=0, nullable=False)

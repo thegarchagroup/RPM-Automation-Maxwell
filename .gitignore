@@ -72,5 +72,7 @@ Thumbs.db
 
 /get_account.py
 /path_finder.py
+alter_db.py
+refreshtoken.py
 
 

@@ -96,6 +96,7 @@ def create_or_submit_inspection(data: InspectionCreate, db: Session = Depends(ge
         ).first()
         if rpm_item:
             rpm_item.inspection_status = "Done"
+            rpm_item.inspection_date = datetime.utcnow().strftime("%Y-%m-%d")
 
     db.commit()
     db.refresh(inspection)

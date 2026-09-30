@@ -14,6 +14,7 @@ class RpmRecordBase(BaseModel):
     ac_servicing: Optional[str] = None
     housekeeping: Optional[str] = None
     inspection_status: str = "Pending"
+    inspection_date: Optional[str] = None
     remarks: Optional[str] = None
     sort_order: int = 0
 
