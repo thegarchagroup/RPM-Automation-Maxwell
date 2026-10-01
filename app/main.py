@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.db import engine, Base, SessionLocal
-from app.services.csv_seeder import parse_and_seed_csv, seed_default_users
+from app.services.user_seeder import seed_default_users
 from app.services.template_seeder import seed_maxwell_template
 from app.routers import rpm_router, auth_router, templates_router, inspections_router, dropbox_router
 

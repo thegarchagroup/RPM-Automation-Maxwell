@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.models.user import User
 from app.schemas.user import UserLogin, UserResponse, Token
-from app.services.csv_seeder import seed_default_users
+from app.services.user_seeder import seed_default_users
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
