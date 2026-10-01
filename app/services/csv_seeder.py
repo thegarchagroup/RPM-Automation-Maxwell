@@ -13,6 +13,10 @@ def parse_and_seed_csv(db: Session, csv_file_path: str = CSV_PATH) -> int:
     Parses the Maxwell Reserve RPM 2026 CSV file and seeds the database.
     Returns the count of records inserted/updated.
     """
+    if db.query(RpmRecord).first() is not None:
+        print("[CSV Seeder] RPM records already exist. Skipping seed.")
+        return 0
+
     if not os.path.exists(csv_file_path):
         print(f"[CSV Seeder] File not found at: {csv_file_path}")
         return 0
@@ -33,7 +37,7 @@ def parse_and_seed_csv(db: Session, csv_file_path: str = CSV_PATH) -> int:
 
     # Header parsing
     property_name = "MAXWELL RESERVE"
-    quarter = "2nd Quarter May-August 2026"
+    quarter = "2nd Quarter April-June 2026"
     year = 2026
 
     # Iterate through data rows (skip initial 4 header rows)
@@ -108,7 +112,7 @@ def parse_and_seed_csv(db: Session, csv_file_path: str = CSV_PATH) -> int:
                 return date_str
             _, m_str, d_str = parts
             orig_m = int(m_str)
-            shift = {1: -4, 2: 0, 3: 4, 4: 5}.get(q_idx, 0)
+            shift = {1: -3, 2: 0, 3: 3, 4: 6}.get(q_idx, 0)
             new_m = max(1, min(12, orig_m + shift))
             day = min(int(d_str), 28)
             return f"{target_yr}-{new_m:02d}-{day:02d}"
@@ -116,9 +120,9 @@ def parse_and_seed_csv(db: Session, csv_file_path: str = CSV_PATH) -> int:
             return date_str
 
     quarter_configs = [
-        (1, "1st Quarter Jan-April", 1),
-        (2, "2nd Quarter May-August", 2),
-        (3, "3rd Quarter Sep-Dec", 3),
+        (1, "1st Quarter Jan-March", 1),
+        (2, "2nd Quarter April-June", 2),
+        (3, "3rd Quarter July-Sept", 3),
         (4, "4th Quarter Oct-Dec", 4),
     ]
 

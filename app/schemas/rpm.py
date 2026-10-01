@@ -31,6 +31,7 @@ class RpmRecordUpdate(BaseModel):
     ac_servicing: Optional[str] = None
     housekeeping: Optional[str] = None
     inspection_status: Optional[str] = None
+    inspection_date: Optional[str] = None
     remarks: Optional[str] = None
     sort_order: Optional[int] = None
 
