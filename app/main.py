@@ -19,7 +19,6 @@ async def lifespan(app: FastAPI):
     try:
         seed_default_users(db)
         seed_maxwell_template(db)
-        parse_and_seed_csv(db)
     finally:
         db.close()
     

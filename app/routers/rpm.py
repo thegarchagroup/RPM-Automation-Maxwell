@@ -13,7 +13,6 @@ from app.schemas.rpm import (
     FloorStats,
     FloorMatrixResponse,
 )
-from app.services.csv_seeder import parse_and_seed_csv
 
 router = APIRouter(prefix="/rpm", tags=["RPM Schedule & Dashboard"])
 
@@ -58,11 +57,6 @@ def get_dashboard_stats(
     
     total_records = query.all()
     total_units = len(total_records)
-    
-    if total_units == 0 and (not year or year == 2026):
-        parse_and_seed_csv(db)
-        total_records = query.all()
-        total_units = len(total_records)
 
     total_rooms = sum(1 for r in total_records if r.category == "guest_room")
     total_public_areas = sum(1 for r in total_records if r.category == "public_area")
@@ -128,10 +122,6 @@ def get_floor_matrix(
 
     records = query.order_by(RpmRecord.sort_order).all()
 
-    if not records and (not year or year == 2026):
-        parse_and_seed_csv(db)
-        records = query.order_by(RpmRecord.sort_order).all()
-
     floors_dict: Dict[str, List[RpmRecordResponse]] = {
         "Floor 1": [],
         "Floor 2": [],
@@ -193,9 +183,6 @@ def list_rpm_records(
         )
 
     records = query.order_by(RpmRecord.sort_order).all()
-    if not records and not search and not floor and (not year or year == 2026):
-        parse_and_seed_csv(db)
-        records = query.order_by(RpmRecord.sort_order).all()
 
     return records
 
@@ -245,9 +232,3 @@ def delete_rpm_record(record_id: int, db: Session = Depends(get_db)):
     db.commit()
     return None
 
-
-@router.post("/seed")
-def seed_rpm_data(db: Session = Depends(get_db)):
-    """Re-seed CSV data into database."""
-    count = parse_and_seed_csv(db)
-    return {"message": f"Successfully parsed and seeded {count} RPM records."}
