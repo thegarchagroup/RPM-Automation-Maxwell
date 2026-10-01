@@ -95,7 +95,7 @@ def create_or_submit_inspection(data: InspectionCreate, db: Session = Depends(ge
             RpmRecord.room_or_area.ilike(f"%{data.room_number}%")
         ).first()
         if rpm_item:
-            rpm_item.inspection_status = "Done"
+            rpm_item.inspection_status = "Pending"
             rpm_item.inspection_date = datetime.utcnow().strftime("%Y-%m-%d")
 
     db.commit()

@@ -111,3 +111,59 @@ async def upload_pdf_to_dropbox(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
         )
+
+
+@router.get("/download-link")
+def get_dropbox_download_link(
+    room_number: str,
+    inspection_date: str,
+    year: int,
+    quarter: str,
+):
+    """
+    Generate a temporary Dropbox download link for an inspection PDF.
+    
+    The file path is constructed as:
+    /RPM/{year}/{quarter}/{room_number}_date_{dd}_{mm}_{yy}.pdf
+    
+    inspection_date should be in YYYY-MM-DD format.
+    """
+    # Parse the date from YYYY-MM-DD to dd_mm_yy
+    try:
+        parts = inspection_date.split("-")
+        if len(parts) == 3:
+            yy = parts[0][-2:]  # last 2 digits of year
+            mm = parts[1]
+            dd = parts[2]
+            date_str = f"{dd}_{mm}_{yy}"
+        else:
+            date_str = inspection_date.replace("-", "_")
+    except Exception:
+        date_str = inspection_date.replace("-", "_")
+
+    # Clean room number (extract just the number)
+    clean_room = str(room_number).strip().replace("Room ", "").replace("room ", "").strip()
+
+    # Construct filename: e.g. 101_date_01_10_26.pdf
+    filename = f"{clean_room}_date_{date_str}.pdf"
+
+    # Construct the full Dropbox path
+    clean_quarter = str(quarter).strip()
+    file_path = f"{MAXWELL_RPM_FOLDER}/{year}/{clean_quarter}/{filename}"
+
+    try:
+        link = dropbox_service.get_preview_link(file_path)
+        if link:
+            return {"success": True, "download_url": link, "filename": filename, "path": file_path}
+        else:
+            raise HTTPException(
+                status_code=404,
+                detail=f"File not found in Dropbox: {file_path}"
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get download link: {str(e)}"
+        )
