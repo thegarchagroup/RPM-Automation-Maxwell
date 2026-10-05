@@ -1,0 +1,10 @@
+services:
+  rpm-api:
+    build: .
+    container_name: rpm-api
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: true
+    ports:
+      - "127.0.0.1:8105:8000"
