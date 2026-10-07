@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.db import engine, Base, SessionLocal
+from app.db import engine, Base, SessionLocal, sync_table_columns
 from app.services.user_seeder import seed_default_users
 from app.services.template_seeder import seed_maxwell_template
 from app.routers import rpm_router, auth_router, templates_router, inspections_router, dropbox_router
@@ -11,8 +11,9 @@ from app.routers import rpm_router, auth_router, templates_router, inspections_r
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize DB Tables
+    # Initialize DB Tables & Sync Missing Columns
     Base.metadata.create_all(bind=engine)
+    sync_table_columns()
     
     # Auto-seed initial datasets into database
     db = SessionLocal()

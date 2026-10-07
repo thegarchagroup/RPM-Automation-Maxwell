@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from typing import Optional
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException, status
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, status, Query
 from pydantic import BaseModel
 
 from app.services.dropbox_service import dropbox_service
@@ -68,16 +68,20 @@ async def upload_pdf_to_dropbox(
     now = datetime.now()
     date_str = now.strftime("%d_%m_%y")
 
-    # Construct the filename as room_no_date_dd_mm_yy.pdf
-    if room_number:
+    # Prioritize provided filename if specified (e.g., RPM_101_date.pdf or Inspection_101_date.pdf)
+    if filename and filename.strip():
+        final_filename = filename.strip()
+        if not final_filename.endswith(".pdf"):
+            final_filename = f"{final_filename}.pdf"
+    elif file.filename and file.filename.strip() and not file.filename.startswith("blob"):
+        final_filename = file.filename.strip()
+        if not final_filename.endswith(".pdf"):
+            final_filename = f"{final_filename}.pdf"
+    elif room_number:
         clean_room_no = str(room_number).strip().replace(" ", "_").replace("/", "_")
         final_filename = f"{clean_room_no}_date_{date_str}.pdf"
     else:
-        final_filename = filename
-        if final_filename and not final_filename.endswith(".pdf"):
-            final_filename = f"{final_filename}.pdf"
-        elif not final_filename:
-            final_filename = f"report_date_{date_str}.pdf"
+        final_filename = f"report_date_{date_str}.pdf"
 
     # Construct the folder path based on year and quarter
     # The Dropbox API automatically creates missing folders during upload
@@ -119,14 +123,11 @@ def get_dropbox_download_link(
     inspection_date: str,
     year: int,
     quarter: str,
+    document_type: Optional[str] = Query(None) # "Inspection" or "RPM" or None
 ):
     """
     Generate a temporary Dropbox download link for an inspection PDF.
-    
-    The file path is constructed as:
-    /RPM/{year}/{quarter}/{room_number}_date_{dd}_{mm}_{yy}.pdf
-    
-    inspection_date should be in YYYY-MM-DD format.
+    Searches for Inspection_<room>_<date>.pdf, RPM_<room>_<date>.pdf, or <room>_date_<date>.pdf.
     """
     # Parse the date from YYYY-MM-DD to dd_mm_yy
     try:
@@ -143,27 +144,34 @@ def get_dropbox_download_link(
 
     # Clean room number (extract just the number)
     clean_room = str(room_number).strip().replace("Room ", "").replace("room ", "").strip()
-
-    # Construct filename: e.g. 101_date_01_10_26.pdf
-    filename = f"{clean_room}_date_{date_str}.pdf"
-
-    # Construct the full Dropbox path
     clean_quarter = str(quarter).strip()
-    file_path = f"{MAXWELL_RPM_FOLDER}/{year}/{clean_quarter}/{filename}"
+    dir_path = f"{MAXWELL_RPM_FOLDER}/{year}/{clean_quarter}"
 
-    try:
-        link = dropbox_service.get_preview_link(file_path)
-        if link:
-            return {"success": True, "download_url": link, "filename": filename, "path": file_path}
-        else:
-            raise HTTPException(
-                status_code=404,
-                detail=f"File not found in Dropbox: {file_path}"
-            )
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get download link: {str(e)}"
-        )
+    # Try preferred filenames
+    candidate_filenames = []
+    if document_type:
+        candidate_filenames.append(f"{document_type}_{clean_room}_{inspection_date}.pdf")
+        candidate_filenames.append(f"{document_type}_{clean_room}_{date_str}.pdf")
+    
+    candidate_filenames.extend([
+        f"Inspection_{clean_room}_{inspection_date}.pdf",
+        f"Inspection_{clean_room}_{date_str}.pdf",
+        f"RPM_{clean_room}_{inspection_date}.pdf",
+        f"RPM_{clean_room}_{date_str}.pdf",
+        f"{clean_room}_date_{date_str}.pdf",
+        f"{clean_room}_date_{inspection_date}.pdf",
+    ])
+
+    for fname in candidate_filenames:
+        file_path = f"{dir_path}/{fname}"
+        try:
+            link = dropbox_service.get_preview_link(file_path)
+            if link:
+                return {"success": True, "download_url": link, "filename": fname, "path": file_path}
+        except Exception:
+            continue
+
+    raise HTTPException(
+        status_code=404,
+        detail=f"Report PDF not found in Dropbox for Room {clean_room} ({inspection_date})"
+    )

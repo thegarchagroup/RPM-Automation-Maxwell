@@ -3,18 +3,18 @@ from app.models.user import User
 
 
 def seed_default_users(db: Session) -> None:
-    """Seed default demo users (Inspector, Supervisor, Admin) if not exist."""
+    """Seed default demo users (RPM, Inspector, Admin) if not exist."""
     demo_users = [
+        {
+            "email": "rpm@maxwell.com",
+            "full_name": "RPM Technician",
+            "role": "rpm",
+            "hashed_password": "hashed_default_password_123"
+        },
         {
             "email": "inspector@maxwell.com",
             "full_name": "John Tan (Inspector)",
             "role": "inspector",
-            "hashed_password": "hashed_default_password_123"
-        },
-        {
-            "email": "supervisor@maxwell.com",
-            "full_name": "Sarah Lee (Supervisor)",
-            "role": "supervisor",
             "hashed_password": "hashed_default_password_123"
         },
         {

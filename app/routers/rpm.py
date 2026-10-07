@@ -64,8 +64,8 @@ def get_dashboard_stats(
     pending_count = total_units - completed_count
     overall_rate = round((completed_count / total_units * 100), 1) if total_units > 0 else 0.0
 
-    # Floor-wise stats
-    floor_order = ["Floor 1", "Floor 2", "Floor 3", "Floor 4", "Public Area"]
+    # Floor/Level-wise stats
+    floor_order = ["Level 1", "Level 2", "Level 3", "Level 4", "Floor 1", "Floor 2", "Floor 3", "Floor 4", "Public Area"]
     floor_stats: List[FloorStats] = []
 
     for fl in floor_order:
@@ -123,6 +123,10 @@ def get_floor_matrix(
     records = query.order_by(RpmRecord.sort_order).all()
 
     floors_dict: Dict[str, List[RpmRecordResponse]] = {
+        "Level 1": [],
+        "Level 2": [],
+        "Level 3": [],
+        "Level 4": [],
         "Floor 1": [],
         "Floor 2": [],
         "Floor 3": [],
@@ -158,20 +162,21 @@ def list_rpm_records(
     """
     query = db.query(RpmRecord)
 
-    if property_name:
+    if property_name and isinstance(property_name, str):
         query = query.filter(RpmRecord.property_name.ilike(f"%{property_name}%"))
-    if year:
+    if year and isinstance(year, int):
         query = query.filter(RpmRecord.year == year)
-    q_filter = get_quarter_filter(quarter)
-    if q_filter is not None:
-        query = query.filter(q_filter)
-    if floor:
+    if quarter and isinstance(quarter, str):
+        q_filter = get_quarter_filter(quarter)
+        if q_filter is not None:
+            query = query.filter(q_filter)
+    if floor and isinstance(floor, str):
         query = query.filter(RpmRecord.floor == floor)
-    if category:
+    if category and isinstance(category, str):
         query = query.filter(RpmRecord.category == category)
-    if status:
+    if status and isinstance(status, str):
         query = query.filter(RpmRecord.inspection_status == status)
-    if search:
+    if search and isinstance(search, str):
         search_pattern = f"%{search}%"
         query = query.filter(
             or_(

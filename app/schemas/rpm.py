@@ -10,6 +10,7 @@ class RpmRecordBase(BaseModel):
     floor: str
     category: str = "guest_room"
     room_or_area: str
+    rpm_date: Optional[str] = None
     eng_date: Optional[str] = None
     ac_servicing: Optional[str] = None
     housekeeping: Optional[str] = None
@@ -27,6 +28,7 @@ class RpmRecordUpdate(BaseModel):
     floor: Optional[str] = None
     category: Optional[str] = None
     room_or_area: Optional[str] = None
+    rpm_date: Optional[str] = None
     eng_date: Optional[str] = None
     ac_servicing: Optional[str] = None
     housekeeping: Optional[str] = None
