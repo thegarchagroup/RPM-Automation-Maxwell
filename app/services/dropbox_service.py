@@ -182,5 +182,51 @@ class DropboxService:
         except Exception:
             return None
 
+    def list_folder_files(self, folder_path: str, token: Optional[str] = None) -> list:
+        """List files in a Dropbox folder."""
+        if not token:
+            token = self._get_active_token()
+
+        clean_folder = folder_path.strip().rstrip("/")
+        if not clean_folder.startswith("/"):
+            clean_folder = "/" + clean_folder
+
+        try:
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json"
+            }
+            headers.update(self._path_root_header())
+
+            req = urllib.request.Request(
+                "https://api.dropboxapi.com/2/files/list_folder",
+                data=json.dumps({"path": clean_folder, "recursive": False}).encode("utf-8"),
+                headers=headers
+            )
+            with urllib.request.urlopen(req) as resp:
+                res_data = json.loads(resp.read().decode("utf-8"))
+                entries = res_data.get("entries", [])
+                return [entry for entry in entries if entry.get(".tag") == "file"]
+        except Exception:
+            return []
+
+    def download_file(self, dropbox_path: str, token: Optional[str] = None) -> bytes:
+        """Download raw file bytes from Dropbox."""
+        if not token:
+            token = self._get_active_token()
+
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Dropbox-API-Arg": json.dumps({"path": dropbox_path}),
+        }
+        headers.update(self._path_root_header())
+
+        req = urllib.request.Request(
+            "https://content.dropboxapi.com/2/files/download",
+            headers=headers
+        )
+        with urllib.request.urlopen(req) as resp:
+            return resp.read()
+
 
 dropbox_service = DropboxService()

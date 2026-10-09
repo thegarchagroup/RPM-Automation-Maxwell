@@ -8,6 +8,16 @@ class ChecklistItemBase(BaseModel):
     sort_order: int = 0
 
 
+class ChecklistItemCreate(ChecklistItemBase):
+    pass
+
+
+class ChecklistItemUpdate(BaseModel):
+    item_no: Optional[int] = None
+    description: Optional[str] = None
+    sort_order: Optional[int] = None
+
+
 class ChecklistItemResponse(ChecklistItemBase):
     id: int
     section_id: int
@@ -22,6 +32,16 @@ class SectionBase(BaseModel):
     sort_order: int = 0
 
 
+class SectionCreate(SectionBase):
+    pass
+
+
+class SectionUpdate(BaseModel):
+    code: Optional[str] = None
+    title: Optional[str] = None
+    sort_order: Optional[int] = None
+
+
 class SectionResponse(SectionBase):
     id: int
     template_id: int
@@ -29,6 +49,14 @@ class SectionResponse(SectionBase):
 
     class Config:
         from_attributes = True
+
+
+class TemplateUpdate(BaseModel):
+    title: Optional[str] = None
+    property_name: Optional[str] = None
+    header_fields: Optional[List[str]] = None
+    footer_fields: Optional[List[str]] = None
+    is_active: Optional[bool] = None
 
 
 class TemplateResponse(BaseModel):

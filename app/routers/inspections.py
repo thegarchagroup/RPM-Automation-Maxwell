@@ -85,8 +85,8 @@ def get_inspection(inspection_id: int, db: Session = Depends(get_db)):
 def create_or_submit_inspection(data: InspectionCreate, db: Session = Depends(get_db)):
     """Create or submit an inspection report and auto-update the RPM schedule status."""
     now = datetime.utcnow()
-    submitted_at = now if data.status in ["submitted", "verified"] else None
-    verified_at = now if data.status == "verified" else None
+    submitted_at = now if data.status in ["submitted", "verified", "accepted", "rejected"] else None
+    verified_at = now if data.status in ["verified", "accepted", "rejected"] else None
 
     inspection = Inspection(
         room_number=data.room_number,
@@ -126,11 +126,14 @@ def create_or_submit_inspection(data: InspectionCreate, db: Session = Depends(ge
         None
     )
     if rpm_item:
-        if data.status == "verified":
-            rpm_item.inspection_status = "Done"
+        if data.status in ["verified", "accepted"]:
+            rpm_item.inspection_status = "Accepted"
             rpm_item.inspection_date = data.inspection_date or now.strftime("%Y-%m-%d")
             if not getattr(rpm_item, 'rpm_date', None):
                 rpm_item.rpm_date = rpm_item.eng_date or data.inspection_date
+        elif data.status == "rejected":
+            rpm_item.inspection_status = "Rejected"
+            rpm_item.inspection_date = data.inspection_date or now.strftime("%Y-%m-%d")
         elif data.status == "submitted":
             rpm_item.inspection_status = "Pending"
             rpm_item.rpm_date = data.inspection_date or now.strftime("%Y-%m-%d")
@@ -149,32 +152,50 @@ def update_inspection(inspection_id: int, data: InspectionUpdate, db: Session = 
         raise HTTPException(status_code=404, detail="Inspection not found")
 
     now = datetime.utcnow()
-    if data.room_number is not None:
-        insp.room_number = data.room_number
-    if data.room_type is not None:
-        insp.room_type = data.room_type
-    if data.inspection_date is not None:
-        insp.inspection_date = data.inspection_date
-    if data.property_name is not None:
-        insp.property_name = data.property_name
-    if data.quarter is not None:
-        insp.quarter = data.quarter
-    if data.maintenance_carried_by is not None:
-        insp.maintenance_carried_by = data.maintenance_carried_by
+    is_verifying = data.status in ["verified", "accepted", "rejected"]
+
+    # Ensure verified forms cannot be altered by normal edits
+    if insp.status in ["verified", "accepted"] and not is_verifying:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This form is already verified and locked. Submitted forms cannot be edited."
+        )
+
+    if insp.status == "submitted" and not is_verifying:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Submitted forms cannot be edited. Only Inspector verification is permitted."
+        )
+
+    if not is_verifying:
+        if data.room_number is not None:
+            insp.room_number = data.room_number
+        if data.room_type is not None:
+            insp.room_type = data.room_type
+        if data.inspection_date is not None:
+            insp.inspection_date = data.inspection_date
+        if data.property_name is not None:
+            insp.property_name = data.property_name
+        if data.quarter is not None:
+            insp.quarter = data.quarter
+        if data.maintenance_carried_by is not None:
+            insp.maintenance_carried_by = data.maintenance_carried_by
+        if data.signature_url is not None:
+            insp.signature_url = data.signature_url
+        if data.overall_remark is not None:
+            insp.overall_remark = data.overall_remark
+
+    # Inspector verification fields
     if data.inspected_by is not None:
         insp.inspected_by = data.inspected_by
-    if data.signature_url is not None:
-        insp.signature_url = data.signature_url
     if data.inspected_by_signature_url is not None:
         insp.inspected_by_signature_url = data.inspected_by_signature_url
-    if data.overall_remark is not None:
-        insp.overall_remark = data.overall_remark
     if data.inspector_remark is not None:
         insp.inspector_remark = data.inspector_remark
 
     if data.status is not None:
         insp.status = data.status
-        if data.status == "verified":
+        if data.status in ["verified", "accepted", "rejected"]:
             insp.verified_at = now
         elif data.status == "submitted" and not insp.submitted_at:
             insp.submitted_at = now
@@ -185,22 +206,26 @@ def update_inspection(inspection_id: int, data: InspectionUpdate, db: Session = 
         for item_data in data.items:
             if item_data.checklist_item_id in existing_items:
                 ex = existing_items[item_data.checklist_item_id]
-                ex.result = item_data.result
-                if item_data.remark is not None:
-                    ex.remark = item_data.remark
+                # Always allow updating result (Pass / Fail) and inspector_remark
+                if item_data.result is not None:
+                    ex.result = item_data.result
+                if not is_verifying:
+                    if item_data.remark is not None:
+                        ex.remark = item_data.remark
+                    if item_data.photo_url is not None:
+                        ex.photo_url = item_data.photo_url
                 if item_data.inspector_remark is not None:
                     ex.inspector_remark = item_data.inspector_remark
-                if item_data.photo_url is not None:
-                    ex.photo_url = item_data.photo_url
             else:
-                db.add(InspectionItem(
-                    inspection_id=insp.id,
-                    checklist_item_id=item_data.checklist_item_id,
-                    result=item_data.result,
-                    remark=item_data.remark,
-                    inspector_remark=item_data.inspector_remark,
-                    photo_url=item_data.photo_url
-                ))
+                if not is_verifying:
+                    db.add(InspectionItem(
+                        inspection_id=insp.id,
+                        checklist_item_id=item_data.checklist_item_id,
+                        result=item_data.result,
+                        remark=item_data.remark,
+                        inspector_remark=item_data.inspector_remark,
+                        photo_url=item_data.photo_url
+                    ))
 
     # Sync with RPM schedule table
     clean_target = insp.room_number.lower().replace("room", "").strip()
@@ -210,11 +235,14 @@ def update_inspection(inspection_id: int, data: InspectionUpdate, db: Session = 
         None
     )
     if rpm_item:
-        if insp.status == "verified":
-            rpm_item.inspection_status = "Done"
+        if insp.status in ["verified", "accepted"]:
+            rpm_item.inspection_status = "Accepted"
             rpm_item.inspection_date = insp.inspection_date or now.strftime("%Y-%m-%d")
             if not getattr(rpm_item, 'rpm_date', None):
                 rpm_item.rpm_date = rpm_item.eng_date or insp.inspection_date
+        elif insp.status == "rejected":
+            rpm_item.inspection_status = "Rejected"
+            rpm_item.inspection_date = insp.inspection_date or now.strftime("%Y-%m-%d")
         elif insp.status == "submitted":
             rpm_item.inspection_status = "Pending"
             rpm_item.rpm_date = insp.inspection_date or now.strftime("%Y-%m-%d")

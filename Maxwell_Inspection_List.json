@@ -1,0 +1,644 @@
+{
+  "title": "MAXWELL INSPECTION LIST",
+  "property_name": "The Maxwell",
+  "header_fields": [
+    "Type",
+    "Room"
+  ],
+  "footer_fields": [
+    "Date",
+    "Inspected By",
+    "Verified By"
+  ],
+  "sections": [
+    {
+      "id": 1,
+      "template_id": 1,
+      "code": "A",
+      "title": "Doors ( Entrance/ Connecting )",
+      "sort_order": 0,
+      "items": [
+        {
+          "id": 101,
+          "section_id": 1,
+          "item_no": 1,
+          "description": "Check Keycard Access (Main Door)",
+          "sort_order": 0
+        },
+        {
+          "id": 102,
+          "section_id": 1,
+          "item_no": 2,
+          "description": "Check Aircon Thermostat(Keycard in 22c/Keycard Out 24c)",
+          "sort_order": 1
+        },
+        {
+          "id": 103,
+          "section_id": 1,
+          "item_no": 3,
+          "description": "Check and Test Doors - Does Not Slam/Close Fully",
+          "sort_order": 2
+        },
+        {
+          "id": 104,
+          "section_id": 1,
+          "item_no": 4,
+          "description": "Visual Check on Finishing - no stain marks, consistent colour",
+          "sort_order": 3
+        },
+        {
+          "id": 105,
+          "section_id": 1,
+          "item_no": 5,
+          "description": "Check and Test Door Closer - functioning properly, complete, not loose",
+          "sort_order": 4
+        },
+        {
+          "id": 106,
+          "section_id": 1,
+          "item_no": 6,
+          "description": "Check Peep Hole",
+          "sort_order": 5
+        },
+        {
+          "id": 107,
+          "section_id": 1,
+          "item_no": 7,
+          "description": "Check and Test Door Handle",
+          "sort_order": 6
+        },
+        {
+          "id": 108,
+          "section_id": 1,
+          "item_no": 8,
+          "description": "Check Door Drop Seal",
+          "sort_order": 7
+        },
+        {
+          "id": 109,
+          "section_id": 1,
+          "item_no": 9,
+          "description": "Check Door Rubber Seal",
+          "sort_order": 8
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "template_id": 1,
+      "code": "B",
+      "title": "Bedroom",
+      "sort_order": 1,
+      "items": [
+        {
+          "id": 201,
+          "section_id": 2,
+          "item_no": 1,
+          "description": "Check Power Circuit - MCB / RCCB (Trip Test)",
+          "sort_order": 0
+        },
+        {
+          "id": 202,
+          "section_id": 2,
+          "item_no": 2,
+          "description": "Check Minibar Temperature",
+          "sort_order": 1
+        },
+        {
+          "id": 203,
+          "section_id": 2,
+          "item_no": 3,
+          "description": "Check and Test Minibar/Roller track",
+          "sort_order": 2
+        },
+        {
+          "id": 204,
+          "section_id": 2,
+          "item_no": 4,
+          "description": "Check and Test TV Channel / Speaker(Max 35)",
+          "sort_order": 3
+        },
+        {
+          "id": 205,
+          "section_id": 2,
+          "item_no": 5,
+          "description": "Check TV Remote control Holder",
+          "sort_order": 4
+        },
+        {
+          "id": 206,
+          "section_id": 2,
+          "item_no": 6,
+          "description": "Check and Test Telephone",
+          "sort_order": 5
+        },
+        {
+          "id": 207,
+          "section_id": 2,
+          "item_no": 7,
+          "description": "Check All SSO for  Minibar / Tea Closet / Foyer / Bedroom / Minibar Counter / TV / Desk (Trip Test)",
+          "sort_order": 6
+        },
+        {
+          "id": 208,
+          "section_id": 2,
+          "item_no": 8,
+          "description": "Check and Test Closet Light / Micro-switch",
+          "sort_order": 7
+        },
+        {
+          "id": 209,
+          "section_id": 2,
+          "item_no": 9,
+          "description": "Check and Test Headboard Light",
+          "sort_order": 8
+        },
+        {
+          "id": 210,
+          "section_id": 2,
+          "item_no": 10,
+          "description": "Check and Test Reading Light",
+          "sort_order": 9
+        },
+        {
+          "id": 211,
+          "section_id": 2,
+          "item_no": 11,
+          "description": "Check and Test Wall Light",
+          "sort_order": 10
+        },
+        {
+          "id": 212,
+          "section_id": 2,
+          "item_no": 12,
+          "description": "Check and Test Ceiling Light",
+          "sort_order": 11
+        },
+        {
+          "id": 213,
+          "section_id": 2,
+          "item_no": 13,
+          "description": "Check and Test Standing Light",
+          "sort_order": 12
+        },
+        {
+          "id": 214,
+          "section_id": 2,
+          "item_no": 14,
+          "description": "Check and Test Emergency Light",
+          "sort_order": 13
+        },
+        {
+          "id": 215,
+          "section_id": 2,
+          "item_no": 15,
+          "description": "Check and Secure Windows",
+          "sort_order": 14
+        },
+        {
+          "id": 216,
+          "section_id": 2,
+          "item_no": 16,
+          "description": "Check Bedframe - Touch up if necessary",
+          "sort_order": 15
+        },
+        {
+          "id": 217,
+          "section_id": 2,
+          "item_no": 17,
+          "description": "Check and Test Curtains",
+          "sort_order": 16
+        },
+        {
+          "id": 218,
+          "section_id": 2,
+          "item_no": 18,
+          "description": "Check and Test Bedside / Desk Lamp / Desk USB port",
+          "sort_order": 17
+        },
+        {
+          "id": 219,
+          "section_id": 2,
+          "item_no": 19,
+          "description": "Check carpet for Stains / Discolouration",
+          "sort_order": 18
+        },
+        {
+          "id": 220,
+          "section_id": 2,
+          "item_no": 20,
+          "description": "Check PA Speaker for Abnormality",
+          "sort_order": 19
+        },
+        {
+          "id": 221,
+          "section_id": 2,
+          "item_no": 21,
+          "description": "Check Smoke Detector (Flashing LED/Abnormality)",
+          "sort_order": 20
+        },
+        {
+          "id": 222,
+          "section_id": 2,
+          "item_no": 22,
+          "description": "Check Access Panel for Abnormality",
+          "sort_order": 21
+        },
+        {
+          "id": 223,
+          "section_id": 2,
+          "item_no": 23,
+          "description": "Check Aircon grill - Clean up",
+          "sort_order": 22
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "template_id": 1,
+      "code": "C",
+      "title": "Bathroom",
+      "sort_order": 2,
+      "items": [
+        {
+          "id": 301,
+          "section_id": 3,
+          "item_no": 1,
+          "description": "Check Switch for Ceiling/Mirror Light",
+          "sort_order": 0
+        },
+        {
+          "id": 302,
+          "section_id": 3,
+          "item_no": 2,
+          "description": "Check and Test Glass doors - Shower/WC",
+          "sort_order": 1
+        },
+        {
+          "id": 303,
+          "section_id": 3,
+          "item_no": 3,
+          "description": "Check and Test Bathroom Glass/Sliding Door",
+          "sort_order": 2
+        },
+        {
+          "id": 304,
+          "section_id": 3,
+          "item_no": 4,
+          "description": "Check Telephone Speaker",
+          "sort_order": 3
+        },
+        {
+          "id": 305,
+          "section_id": 3,
+          "item_no": 5,
+          "description": "Check Basin or Bathtub Hot Water Temperature",
+          "sort_order": 4
+        },
+        {
+          "id": 306,
+          "section_id": 3,
+          "item_no": 6,
+          "description": "Check and Test Basin -  Overflow, Tap & Stopper",
+          "sort_order": 5
+        },
+        {
+          "id": 307,
+          "section_id": 3,
+          "item_no": 7,
+          "description": "Check WC Switch, WC Bowl / Flush",
+          "sort_order": 6
+        },
+        {
+          "id": 308,
+          "section_id": 3,
+          "item_no": 8,
+          "description": "Check Standing Shower Head - Spray Even/Leaking",
+          "sort_order": 7
+        },
+        {
+          "id": 309,
+          "section_id": 3,
+          "item_no": 9,
+          "description": "Check Standing Shower - Hand Shower Holder  Installation",
+          "sort_order": 8
+        },
+        {
+          "id": 310,
+          "section_id": 3,
+          "item_no": 10,
+          "description": "Check Wall Hooks - Tighten screws",
+          "sort_order": 9
+        },
+        {
+          "id": 311,
+          "section_id": 3,
+          "item_no": 11,
+          "description": "Check and Test Standing Shower Mixer",
+          "sort_order": 10
+        },
+        {
+          "id": 312,
+          "section_id": 3,
+          "item_no": 12,
+          "description": "Check Bathtub Hand Shower Holder",
+          "sort_order": 11
+        },
+        {
+          "id": 313,
+          "section_id": 3,
+          "item_no": 13,
+          "description": "Check and Test Bathtub - Mixer knob",
+          "sort_order": 12
+        },
+        {
+          "id": 314,
+          "section_id": 3,
+          "item_no": 14,
+          "description": "Check and Test Bathtub Sprout",
+          "sort_order": 13
+        },
+        {
+          "id": 315,
+          "section_id": 3,
+          "item_no": 15,
+          "description": "Check and Test Bathtub Stopper",
+          "sort_order": 14
+        },
+        {
+          "id": 316,
+          "section_id": 3,
+          "item_no": 16,
+          "description": "Check and Flush Floor Trap",
+          "sort_order": 15
+        },
+        {
+          "id": 317,
+          "section_id": 3,
+          "item_no": 17,
+          "description": "Check Access Panel",
+          "sort_order": 16
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "template_id": 1,
+      "code": "D",
+      "title": "Toilet Accessories",
+      "sort_order": 3,
+      "items": [
+        {
+          "id": 401,
+          "section_id": 4,
+          "item_no": 1,
+          "description": "Check Toilet Accessories - Soap dish, Toilet roll holder",
+          "sort_order": 0
+        },
+        {
+          "id": 402,
+          "section_id": 4,
+          "item_no": 2,
+          "description": "Check and Test Bathroom Glass/Wood Door",
+          "sort_order": 1
+        },
+        {
+          "id": 403,
+          "section_id": 4,
+          "item_no": 3,
+          "description": "Check Bathroom Glass/Mirror Shelves - Chip/Crack",
+          "sort_order": 2
+        },
+        {
+          "id": 404,
+          "section_id": 4,
+          "item_no": 4,
+          "description": "Check WC - Loose",
+          "sort_order": 3
+        },
+        {
+          "id": 405,
+          "section_id": 4,
+          "item_no": 5,
+          "description": "Check and Test Bathtub - Drainage & faucet work properly",
+          "sort_order": 4
+        },
+        {
+          "id": 406,
+          "section_id": 4,
+          "item_no": 6,
+          "description": "Check Wash Basin - Drainage & faucet work properly",
+          "sort_order": 5
+        },
+        {
+          "id": 407,
+          "section_id": 4,
+          "item_no": 7,
+          "description": "Check and Test Shower - Scupper Drain Water Flow/Drain Chokage (Flush)",
+          "sort_order": 6
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "template_id": 1,
+      "code": "E",
+      "title": "Handicapp Room",
+      "sort_order": 4,
+      "items": [
+        {
+          "id": 501,
+          "section_id": 5,
+          "item_no": 1,
+          "description": "Check Grab Bar",
+          "sort_order": 0
+        },
+        {
+          "id": 502,
+          "section_id": 5,
+          "item_no": 2,
+          "description": "Check Seat",
+          "sort_order": 1
+        },
+        {
+          "id": 503,
+          "section_id": 5,
+          "item_no": 3,
+          "description": "Check Strobe Light For Abnormality",
+          "sort_order": 2
+        },
+        {
+          "id": 504,
+          "section_id": 5,
+          "item_no": 4,
+          "description": "Check Bidet For Leak/Damage",
+          "sort_order": 3
+        },
+        {
+          "id": 505,
+          "section_id": 5,
+          "item_no": 5,
+          "description": "Check Towel Stand",
+          "sort_order": 4
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "template_id": 1,
+      "code": "F",
+      "title": "Closet/Wardrobe",
+      "sort_order": 5,
+      "items": [
+        {
+          "id": 601,
+          "section_id": 6,
+          "item_no": 1,
+          "description": "Check and Test Tea Closet/Wardrobe Door - Does not Rubs",
+          "sort_order": 0
+        },
+        {
+          "id": 602,
+          "section_id": 6,
+          "item_no": 2,
+          "description": "Visual Check - Alignment/Angle is Flush",
+          "sort_order": 1
+        },
+        {
+          "id": 603,
+          "section_id": 6,
+          "item_no": 3,
+          "description": "Visual Check Glass  - Crack/Chips",
+          "sort_order": 2
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "template_id": 1,
+      "code": "G",
+      "title": "Timber Flooring/Skirting",
+      "sort_order": 6,
+      "items": [
+        {
+          "id": 701,
+          "section_id": 7,
+          "item_no": 1,
+          "description": "Visual Check on Timber - no damage, Scratches",
+          "sort_order": 0
+        },
+        {
+          "id": 702,
+          "section_id": 7,
+          "item_no": 2,
+          "description": "Visual Check Finishing - consistent colour, no discoloration, stain marks, scratches",
+          "sort_order": 1
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "template_id": 1,
+      "code": "H",
+      "title": "Stones (Wall and Floor)",
+      "sort_order": 7,
+      "items": [
+        {
+          "id": 801,
+          "section_id": 8,
+          "item_no": 1,
+          "description": "Visual Check on Marble/Quartz - no damage, cracks, chipping, scratches/ Stains /Mould /Leaks",
+          "sort_order": 0
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "template_id": 1,
+      "code": "I",
+      "title": "Partition Wall",
+      "sort_order": 8,
+      "items": [
+        {
+          "id": 901,
+          "section_id": 9,
+          "item_no": 1,
+          "description": "Visual Check on Walls - no damage, cracks ,chipping,scratches",
+          "sort_order": 0
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "template_id": 1,
+      "code": "J",
+      "title": "Ceiling",
+      "sort_order": 9,
+      "items": [
+        {
+          "id": 1001,
+          "section_id": 10,
+          "item_no": 1,
+          "description": "Visual Check Ceiling  - No damage, Cracks, Chipping,Scratches/Leaking Signs",
+          "sort_order": 0
+        },
+        {
+          "id": 1002,
+          "section_id": 10,
+          "item_no": 2,
+          "description": "Visual Finishing - no stain marks, consistent colour tone, no rough/ patchy surface",
+          "sort_order": 1
+        },
+        {
+          "id": 1003,
+          "section_id": 10,
+          "item_no": 3,
+          "description": "Visual Check on Curtain Pelmet - No stain marks, Uneveness",
+          "sort_order": 2
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "template_id": 1,
+      "code": "K",
+      "title": "Artwork",
+      "sort_order": 10,
+      "items": [
+        {
+          "id": 1101,
+          "section_id": 11,
+          "item_no": 1,
+          "description": "Visual Check  - No stain marks/Damage/Level",
+          "sort_order": 0
+        }
+      ]
+    }
+  ],
+  "common_room_types": [
+    "Deluxe",
+    "Deluxe Twin",
+    "Premier Deluxe",
+    "Maxwell Suite",
+    "Executive Suite",
+    "Handicap Accessible"
+  ],
+  "common_rooms": [
+    "101",
+    "102",
+    "103",
+    "201",
+    "202",
+    "203",
+    "301",
+    "302"
+  ],
+  "quick_defect_tags": [
+    "Loose / Wobbly",
+    "Stained / Dirty",
+    "Scratched / Chipped",
+    "Not functioning",
+    "Needs replacement",
+    "Cleaned & rectified"
+  ]
+}

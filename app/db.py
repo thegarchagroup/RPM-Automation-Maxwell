@@ -2,15 +2,31 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from app.config import settings
 
-# Configure connect args for SQLite if used
+# Configure connect args and pooling options
 connect_args = {}
-if settings.DATABASE_URL.startswith("sqlite"):
+engine_kwargs = {
+    "echo": False
+}
+
+db_url = settings.DATABASE_URL
+if db_url.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
+else:
+    # Neon / PostgreSQL serverless pooling resilience:
+    # pool_pre_ping detects stale/dropped connections and automatically reconnects
+    # pool_recycle prevents connections from exceeding Neon's idle timeout
+    engine_kwargs.update({
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+    })
+    # Remove channel_binding if present as Neon PgBouncer pooler terminates TLS and triggers EOF
+    if "channel_binding=" in db_url:
+        db_url = db_url.replace("&channel_binding=require", "").replace("?channel_binding=require&", "?").replace("?channel_binding=require", "")
 
 engine = create_engine(
-    settings.DATABASE_URL,
+    db_url,
     connect_args=connect_args,
-    echo=False
+    **engine_kwargs
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

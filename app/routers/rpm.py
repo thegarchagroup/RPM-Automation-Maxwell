@@ -60,7 +60,7 @@ def get_dashboard_stats(
 
     total_rooms = sum(1 for r in total_records if r.category == "guest_room")
     total_public_areas = sum(1 for r in total_records if r.category == "public_area")
-    completed_count = sum(1 for r in total_records if r.inspection_status == "Done")
+    completed_count = sum(1 for r in total_records if r.inspection_status in ["Done", "Accepted"])
     pending_count = total_units - completed_count
     overall_rate = round((completed_count / total_units * 100), 1) if total_units > 0 else 0.0
 
@@ -73,7 +73,7 @@ def get_dashboard_stats(
         fl_total = len(floor_items)
         if fl_total == 0:
             continue
-        fl_completed = sum(1 for r in floor_items if r.inspection_status == "Done")
+        fl_completed = sum(1 for r in floor_items if r.inspection_status in ["Done", "Accepted"])
         fl_pending = fl_total - fl_completed
         fl_rate = round((fl_completed / fl_total * 100), 1) if fl_total > 0 else 0.0
         floor_stats.append(FloorStats(
@@ -84,7 +84,7 @@ def get_dashboard_stats(
             completion_rate=fl_rate
         ))
 
-    recent_completed = [r for r in total_records if r.inspection_status == "Done"][:10]
+    recent_completed = [r for r in total_records if r.inspection_status in ["Done", "Accepted"]][:10]
 
     return DashboardStats(
         property_name=property_name or "MAXWELL RESERVE",
@@ -175,7 +175,10 @@ def list_rpm_records(
     if category and isinstance(category, str):
         query = query.filter(RpmRecord.category == category)
     if status and isinstance(status, str):
-        query = query.filter(RpmRecord.inspection_status == status)
+        if status.lower() == "done":
+            query = query.filter(RpmRecord.inspection_status.in_(["Done", "Accepted"]))
+        else:
+            query = query.filter(RpmRecord.inspection_status == status)
     if search and isinstance(search, str):
         search_pattern = f"%{search}%"
         query = query.filter(
