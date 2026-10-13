@@ -1,7 +1,11 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, JSON, Boolean
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.mysql import MEDIUMTEXT
 from app.db import Base
+
+# TEXT on PostgreSQL, MEDIUMTEXT (16 MB) on MySQL so base64 images/signatures fit
+LongText = Text().with_variant(MEDIUMTEXT(), "mysql")
 
 
 class Inspection(Base):
@@ -21,8 +25,8 @@ class Inspection(Base):
     
     maintenance_carried_by = Column(String(255), nullable=True)
     inspected_by = Column(String(255), nullable=True)
-    signature_url = Column(Text, nullable=True)
-    inspected_by_signature_url = Column(Text, nullable=True)
+    signature_url = Column(LongText, nullable=True)
+    inspected_by_signature_url = Column(LongText, nullable=True)
     overall_remark = Column(Text, nullable=True) # RPM/maintenance remark
     inspector_remark = Column(Text, nullable=True) # Inspector remark
     
@@ -44,7 +48,7 @@ class InspectionItem(Base):
     result = Column(String(20), nullable=False)  # pass, fail, na
     remark = Column(Text, nullable=True)  # RPM remark
     inspector_remark = Column(Text, nullable=True)  # Inspector remark
-    photo_url = Column(Text, nullable=True)
+    photo_url = Column(LongText, nullable=True)
     is_fixed = Column(Boolean, default=False, nullable=True)
     fixed_at = Column(DateTime, nullable=True)
     fixed_by = Column(String(255), nullable=True)

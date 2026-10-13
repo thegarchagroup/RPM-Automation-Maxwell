@@ -6,5 +6,7 @@ services:
     env_file:
       - path: .env
         required: true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "127.0.0.1:8105:8000"

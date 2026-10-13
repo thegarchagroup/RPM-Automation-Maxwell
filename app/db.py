@@ -12,7 +12,7 @@ db_url = settings.DATABASE_URL
 if db_url.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 else:
-    # Neon / PostgreSQL serverless pooling resilience:
+    # MySQL / PostgreSQL pooling resilience:
     # pool_pre_ping detects stale/dropped connections and automatically reconnects
     # pool_recycle prevents connections from exceeding Neon's idle timeout
     engine_kwargs.update({
@@ -90,15 +90,26 @@ def sync_table_columns():
                     conn.execute(text("ALTER TABLE rpm_records ADD COLUMN inspected_by VARCHAR(255)"))
                 # Backfill submitters from inspections if available
                 if "inspections" in inspector.get_table_names():
-                    conn.execute(text("""
-                        UPDATE rpm_records r
-                        SET 
-                            maintenance_carried_by = COALESCE(r.maintenance_carried_by, i.maintenance_carried_by),
-                            inspected_by = COALESCE(r.inspected_by, i.inspected_by)
-                        FROM inspections i
-                        WHERE LOWER(TRIM(REPLACE(r.room_or_area, 'Room', ''))) = LOWER(TRIM(REPLACE(i.room_number, 'Room', '')))
-                          AND (r.maintenance_carried_by IS NULL OR r.inspected_by IS NULL)
-                    """))
+                    if engine.dialect.name == "mysql":
+                        conn.execute(text("""
+                            UPDATE rpm_records r
+                            JOIN inspections i
+                              ON LOWER(TRIM(REPLACE(r.room_or_area, 'Room', ''))) = LOWER(TRIM(REPLACE(i.room_number, 'Room', '')))
+                            SET
+                                r.maintenance_carried_by = COALESCE(r.maintenance_carried_by, i.maintenance_carried_by),
+                                r.inspected_by = COALESCE(r.inspected_by, i.inspected_by)
+                            WHERE (r.maintenance_carried_by IS NULL OR r.inspected_by IS NULL)
+                        """))
+                    else:
+                        conn.execute(text("""
+                            UPDATE rpm_records r
+                            SET
+                                maintenance_carried_by = COALESCE(r.maintenance_carried_by, i.maintenance_carried_by),
+                                inspected_by = COALESCE(r.inspected_by, i.inspected_by)
+                            FROM inspections i
+                            WHERE LOWER(TRIM(REPLACE(r.room_or_area, 'Room', ''))) = LOWER(TRIM(REPLACE(i.room_number, 'Room', '')))
+                              AND (r.maintenance_carried_by IS NULL OR r.inspected_by IS NULL)
+                        """))
     except Exception as e:
         print(f"[Warning] Failed to sync table columns: {e}")
 
