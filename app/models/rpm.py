@@ -21,6 +21,8 @@ class RpmRecord(Base):
     housekeeping = Column(String(100), nullable=True)
     inspection_status = Column(String(50), default="Pending", nullable=False, index=True)  # Done, Pending, In Progress
     inspection_date = Column(String(50), nullable=True)  # Date of Inspector verification
+    maintenance_carried_by = Column(String(255), nullable=True)  # Technician who submitted RPM form
+    inspected_by = Column(String(255), nullable=True)  # Inspector who verified/submitted inspection
     
     remarks = Column(Text, nullable=True)
     sort_order = Column(Integer, default=0, nullable=False)

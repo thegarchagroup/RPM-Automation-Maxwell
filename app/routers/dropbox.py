@@ -24,24 +24,53 @@ class DropboxUploadResponse(BaseModel):
     share_url: Optional[str] = None
 
 
-MAXWELL_RPM_FOLDER = (
-    "/2 - maxwell operations (murray pte ltd)"
-    "/6 - engineering ops (maxwell)"
-    "/2 - preventive maintenance"
-    "/RPM"
+MAXWELL_RPM_FOLDER = os.getenv(
+    "DROPBOX_MAXWELL_RPM_FOLDER",
+    "/2 - maxwell operations (murray pte ltd)/6 - engineering ops (maxwell)/2 - preventive maintenance/RPM"
 )
+VAGABOND_RPM_FOLDER = os.getenv(
+    "DROPBOX_VAGABOND_RPM_FOLDER",
+    "/1 - vagabond operations (chica linda)/6 - engineering ops (vagabond)/2 - preventive maintenance/RPM"
+)
+SERANGOON_RPM_FOLDER = os.getenv(
+    "DROPBOX_SERANGOON_RPM_FOLDER",
+    "/3 - serangoon operations (ssg hotels pte ltd)/6. engineering ops (serangoon)/2 - preventive maintenance/RPM"
+)
+
+HOTEL_RPM_FOLDERS = {
+    "maxwell": MAXWELL_RPM_FOLDER,
+    "vagabond": VAGABOND_RPM_FOLDER,
+    "serangoon": SERANGOON_RPM_FOLDER,
+}
+
+
+def get_hotel_rpm_folder(property_name: Optional[str] = None) -> str:
+    """
+    Returns the Dropbox root folder for the specified property/hotel.
+    Matches 'Vagabond', 'Serangoon', and defaults to 'Maxwell'.
+    """
+    if not property_name:
+        return MAXWELL_RPM_FOLDER
+
+    prop_clean = str(property_name).strip().lower()
+    if "vagabond" in prop_clean:
+        return VAGABOND_RPM_FOLDER
+    elif "serangoon" in prop_clean:
+        return SERANGOON_RPM_FOLDER
+    return MAXWELL_RPM_FOLDER
 
 
 @router.get("/status", response_model=DropboxStatusResponse)
-def get_dropbox_status():
+def get_dropbox_status(property_name: Optional[str] = Query(None)):
     """Check if Dropbox configuration credentials are present in .env"""
     has_token = bool(dropbox_service.refresh_token or dropbox_service.access_token)
     app_key_present = bool(dropbox_service.app_key)
+    target = get_hotel_rpm_folder(property_name)
     return DropboxStatusResponse(
         configured=has_token,
         app_key_present=app_key_present,
         has_token=has_token,
-        target_folder=MAXWELL_RPM_FOLDER
+        target_folder=target
     )
 
 
@@ -84,15 +113,17 @@ async def upload_pdf_to_dropbox(
     filename: Optional[str] = Form(None),
     document_type: Optional[str] = Form(None),
     status: Optional[str] = Form(None),
+    property_name: Optional[str] = Form(None),
+    hotel: Optional[str] = Form(None),
 ):
     """
     Upload an inspection report PDF to Dropbox.
     Folder structure:
-      {MAXWELL_RPM_FOLDER}/{year}/{quarter}/RPM_report/
+      {HOTEL_RPM_FOLDER}/{year}/{quarter}/RPM_report/
         -> for RPM submitted reports
-      {MAXWELL_RPM_FOLDER}/{year}/{quarter}/Inspection_report/Accepted/
+      {HOTEL_RPM_FOLDER}/{year}/{quarter}/Inspection_report/Accepted/
         -> for accepted inspection reports
-      {MAXWELL_RPM_FOLDER}/{year}/{quarter}/Inspection_report/Rejected/
+      {HOTEL_RPM_FOLDER}/{year}/{quarter}/Inspection_report/Rejected/
         -> for rejected inspection reports
     """
     if not file.filename:
@@ -120,10 +151,13 @@ async def upload_pdf_to_dropbox(
     else:
         final_filename = f"report_date_{date_str}.pdf"
 
+    # Determine root RPM folder based on selected hotel / property
+    target_rpm_folder = get_hotel_rpm_folder(property_name or hotel)
+
     # Construct the folder path based on Year -> Quarter -> RPM_report or Inspection_report/(Accepted|Rejected)
     actual_year = year if year else now.year
     clean_quarter = _normalize_quarter(quarter, now)
-    base_quarter_path = f"{MAXWELL_RPM_FOLDER}/{actual_year}/{clean_quarter}"
+    base_quarter_path = f"{target_rpm_folder}/{actual_year}/{clean_quarter}"
 
     doc_type_upper = (document_type or "").strip().upper()
     status_upper = (status or "").strip().upper()
@@ -174,20 +208,29 @@ def _find_dropbox_pdf(
     inspection_date: str,
     year: int,
     quarter: Optional[str] = None,
-    document_type: Optional[str] = None
+    document_type: Optional[str] = None,
+    property_name: Optional[str] = None,
 ) -> Tuple[Optional[str], Optional[str]]:
     """
     Finds matching Dropbox PDF file path and filename.
     Searches in:
-      - {MAXWELL_RPM_FOLDER}/{year}/{quarter}/RPM_report/
-      - {MAXWELL_RPM_FOLDER}/{year}/{quarter}/Inspection_report/Accepted/
-      - {MAXWELL_RPM_FOLDER}/{year}/{quarter}/Inspection_report/Rejected/
+      - {HOTEL_RPM_FOLDER}/{year}/{quarter}/RPM_report/
+      - {HOTEL_RPM_FOLDER}/{year}/{quarter}/Inspection_report/Accepted/
+      - {HOTEL_RPM_FOLDER}/{year}/{quarter}/Inspection_report/Rejected/
       - fallback across quarters
-      - legacy fallback: {MAXWELL_RPM_FOLDER}/{year}/RPM_report/, {MAXWELL_RPM_FOLDER}/{year}/{quarter}
+      - legacy fallback: {HOTEL_RPM_FOLDER}/{year}/RPM_report/, {HOTEL_RPM_FOLDER}/{year}/{quarter}
+      - fallback across other hotel folders if not found in primary
     """
     clean_room = str(room_number).strip().replace("Room ", "").replace("room ", "").replace("Room", "").replace("room", "").strip()
     req_quarter = _normalize_quarter(quarter) if quarter else ""
     doc_type_upper = (document_type or "").strip().upper()
+
+    # Prioritize selected hotel root folder, with other hotel folders as fallback
+    primary_base = get_hotel_rpm_folder(property_name)
+    search_bases = [primary_base]
+    for b in [MAXWELL_RPM_FOLDER, VAGABOND_RPM_FOLDER, SERANGOON_RPM_FOLDER]:
+        if b not in search_bases:
+            search_bases.append(b)
 
     # Build prioritized candidate directories to search
     candidate_dirs: List[str] = []
@@ -199,27 +242,28 @@ def _find_dropbox_pdf(
         if q not in quarters_to_search:
             quarters_to_search.append(q)
 
-    for q_name in quarters_to_search:
-        q_safe = q_name.replace("/", "_")
-        if doc_type_upper == "RPM":
-            candidate_dirs.append(f"{MAXWELL_RPM_FOLDER}/{year}/{q_safe}/RPM_report")
-            candidate_dirs.append(f"{MAXWELL_RPM_FOLDER}/{year}/{q_safe}")
-        elif doc_type_upper == "INSPECTION":
-            candidate_dirs.append(f"{MAXWELL_RPM_FOLDER}/{year}/{q_safe}/Inspection_report/Accepted")
-            candidate_dirs.append(f"{MAXWELL_RPM_FOLDER}/{year}/{q_safe}/Inspection_report/Rejected")
-            candidate_dirs.append(f"{MAXWELL_RPM_FOLDER}/{year}/{q_safe}/Inspection_report/accepted")
-            candidate_dirs.append(f"{MAXWELL_RPM_FOLDER}/{year}/{q_safe}/Inspection_report/rejected")
-            candidate_dirs.append(f"{MAXWELL_RPM_FOLDER}/{year}/{q_safe}")
-        else:
-            candidate_dirs.append(f"{MAXWELL_RPM_FOLDER}/{year}/{q_safe}/RPM_report")
-            candidate_dirs.append(f"{MAXWELL_RPM_FOLDER}/{year}/{q_safe}/Inspection_report/Accepted")
-            candidate_dirs.append(f"{MAXWELL_RPM_FOLDER}/{year}/{q_safe}/Inspection_report/Rejected")
-            candidate_dirs.append(f"{MAXWELL_RPM_FOLDER}/{year}/{q_safe}")
+    for base_folder in search_bases:
+        for q_name in quarters_to_search:
+            q_safe = q_name.replace("/", "_")
+            if doc_type_upper == "RPM":
+                candidate_dirs.append(f"{base_folder}/{year}/{q_safe}/RPM_report")
+                candidate_dirs.append(f"{base_folder}/{year}/{q_safe}")
+            elif doc_type_upper == "INSPECTION":
+                candidate_dirs.append(f"{base_folder}/{year}/{q_safe}/Inspection_report/Accepted")
+                candidate_dirs.append(f"{base_folder}/{year}/{q_safe}/Inspection_report/Rejected")
+                candidate_dirs.append(f"{base_folder}/{year}/{q_safe}/Inspection_report/accepted")
+                candidate_dirs.append(f"{base_folder}/{year}/{q_safe}/Inspection_report/rejected")
+                candidate_dirs.append(f"{base_folder}/{year}/{q_safe}")
+            else:
+                candidate_dirs.append(f"{base_folder}/{year}/{q_safe}/RPM_report")
+                candidate_dirs.append(f"{base_folder}/{year}/{q_safe}/Inspection_report/Accepted")
+                candidate_dirs.append(f"{base_folder}/{year}/{q_safe}/Inspection_report/Rejected")
+                candidate_dirs.append(f"{base_folder}/{year}/{q_safe}")
 
-    # Fallbacks without quarter
-    candidate_dirs.append(f"{MAXWELL_RPM_FOLDER}/{year}/RPM_report")
-    candidate_dirs.append(f"{MAXWELL_RPM_FOLDER}/{year}/Inspection_report/Accepted")
-    candidate_dirs.append(f"{MAXWELL_RPM_FOLDER}/{year}/Inspection_report/Rejected")
+        # Fallbacks without quarter
+        candidate_dirs.append(f"{base_folder}/{year}/RPM_report")
+        candidate_dirs.append(f"{base_folder}/{year}/Inspection_report/Accepted")
+        candidate_dirs.append(f"{base_folder}/{year}/Inspection_report/Rejected")
 
     seen_dirs = set()
     unique_candidate_dirs: List[str] = []
@@ -352,12 +396,21 @@ def get_dropbox_download_link(
     inspection_date: str,
     year: int,
     quarter: Optional[str] = Query(None),
-    document_type: Optional[str] = Query(None)
+    document_type: Optional[str] = Query(None),
+    property_name: Optional[str] = Query(None),
+    hotel: Optional[str] = Query(None),
 ):
     """
     Generate a temporary Dropbox download link for an inspection PDF.
     """
-    file_path, fname = _find_dropbox_pdf(room_number, inspection_date, year, quarter, document_type)
+    file_path, fname = _find_dropbox_pdf(
+        room_number=room_number,
+        inspection_date=inspection_date,
+        year=year,
+        quarter=quarter,
+        document_type=document_type,
+        property_name=property_name or hotel,
+    )
     if file_path and fname:
         link = dropbox_service.get_preview_link(file_path)
         if link:
@@ -376,13 +429,22 @@ def download_dropbox_file(
     inspection_date: str,
     year: int,
     quarter: Optional[str] = Query(None),
-    document_type: Optional[str] = Query(None)
+    document_type: Optional[str] = Query(None),
+    property_name: Optional[str] = Query(None),
+    hotel: Optional[str] = Query(None),
 ):
     """
     Stream the PDF directly from Dropbox with Content-Disposition attachment header,
     ensuring browsers save it with the correct .pdf filename instead of a temporary UUID.
     """
-    file_path, fname = _find_dropbox_pdf(room_number, inspection_date, year, quarter, document_type)
+    file_path, fname = _find_dropbox_pdf(
+        room_number=room_number,
+        inspection_date=inspection_date,
+        year=year,
+        quarter=quarter,
+        document_type=document_type,
+        property_name=property_name or hotel,
+    )
     clean_room = str(room_number).strip().replace("Room ", "").replace("room ", "").replace("Room", "").replace("room", "").strip()
 
     if not file_path or not fname:

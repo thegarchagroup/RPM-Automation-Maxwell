@@ -4,11 +4,28 @@ from pydantic import BaseModel
 
 
 class InspectionItemResult(BaseModel):
+    id: Optional[int] = None
     checklist_item_id: int
     result: str  # pass, fail, na
     remark: Optional[str] = None  # RPM remark
     inspector_remark: Optional[str] = None  # Inspector remark
     photo_url: Optional[str] = None
+    is_fixed: Optional[bool] = False
+    fixed_at: Optional[datetime] = None
+    fixed_by: Optional[str] = None
+    fixed_remark: Optional[str] = None
+
+
+class DefectItemFixRequest(BaseModel):
+    is_fixed: bool = True
+    fixed_remark: Optional[str] = None
+    fixed_by: Optional[str] = "Admin"
+
+
+class DefectBulkFixRequest(BaseModel):
+    fixed_remark: Optional[str] = None
+    fixed_by: Optional[str] = "Admin"
+    item_ids: Optional[List[int]] = None
 
 
 class InspectionCreate(BaseModel):
@@ -18,6 +35,7 @@ class InspectionCreate(BaseModel):
     property_name: Optional[str] = "Maxwell"
     quarter: Optional[str] = None
     status: str = "in_progress"
+    defects_status: Optional[str] = "open"
     maintenance_carried_by: Optional[str] = None
     inspected_by: Optional[str] = None
     signature_url: Optional[str] = None
@@ -34,6 +52,7 @@ class InspectionUpdate(BaseModel):
     property_name: Optional[str] = None
     quarter: Optional[str] = None
     status: Optional[str] = None
+    defects_status: Optional[str] = None
     maintenance_carried_by: Optional[str] = None
     inspected_by: Optional[str] = None
     signature_url: Optional[str] = None
@@ -51,6 +70,8 @@ class InspectionResponse(BaseModel):
     property_name: Optional[str] = "Maxwell"
     quarter: Optional[str] = None
     status: str
+    defects_status: Optional[str] = "open"
+    defects_completed_at: Optional[datetime] = None
     maintenance_carried_by: Optional[str] = None
     inspected_by: Optional[str] = None
     signature_url: Optional[str] = None

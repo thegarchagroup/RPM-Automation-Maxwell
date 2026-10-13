@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, JSON
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, JSON, Boolean
 from sqlalchemy.orm import relationship
 from app.db import Base
 
@@ -16,6 +16,8 @@ class Inspection(Base):
     property_name = Column(String(100), default="Maxwell", nullable=True)
     quarter = Column(String(100), nullable=True)
     status = Column(String(50), default="in_progress", nullable=False)  # in_progress, submitted, verified
+    defects_status = Column(String(50), default="open", nullable=True)  # open, in_progress, completed
+    defects_completed_at = Column(DateTime, nullable=True)
     
     maintenance_carried_by = Column(String(255), nullable=True)
     inspected_by = Column(String(255), nullable=True)
@@ -43,5 +45,9 @@ class InspectionItem(Base):
     remark = Column(Text, nullable=True)  # RPM remark
     inspector_remark = Column(Text, nullable=True)  # Inspector remark
     photo_url = Column(Text, nullable=True)
+    is_fixed = Column(Boolean, default=False, nullable=True)
+    fixed_at = Column(DateTime, nullable=True)
+    fixed_by = Column(String(255), nullable=True)
+    fixed_remark = Column(Text, nullable=True)
 
     inspection = relationship("Inspection", back_populates="items")

@@ -39,42 +39,49 @@ def login(login_data: UserLogin, db: Session = Depends(get_db)):
     elif role_input:
         norm_role = role_input
 
-    # 1. If email is provided, look up specifically by email
+    # 1. If email is provided, verify against that specific user
     if email_input:
         candidate = db.query(User).filter(func.lower(User.email) == email_input).first()
-        if candidate:
-            if not candidate.is_active:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Account is inactive. Please contact administration."
-                )
-            if not verify_password(provided_password, candidate.hashed_password):
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Invalid password for this account."
-                )
-            user = candidate
+        if not candidate:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="No account found with this email."
+            )
+        if norm_role and candidate.role != norm_role:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"This account is registered as '{candidate.role.upper()}', not '{norm_role.upper()}'. Please select the correct role."
+            )
+        if not candidate.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Account is inactive. Please contact administration."
+            )
+        if not verify_password(provided_password, candidate.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid password for this account."
+            )
+        user = candidate
 
-    # 2. If no email or not matched yet, check all active users with this role in DB
-    if not user and norm_role:
+    # 2. If no email is provided, authenticate against the selected role's users only
+    elif norm_role:
         role_candidates = db.query(User).filter(User.role == norm_role, User.is_active == True).all()
         for candidate in role_candidates:
             if verify_password(provided_password, candidate.hashed_password):
                 user = candidate
                 break
 
-    # 3. If still not found and no specific email was entered, search across all active users in DB
-    if not user and not email_input:
-        all_candidates = db.query(User).filter(User.is_active == True).all()
-        for candidate in all_candidates:
-            if verify_password(provided_password, candidate.hashed_password):
-                user = candidate
-                break
-
-    if not user:
+        if not user:
+            role_display = "RPM Technician" if norm_role == "rpm" else norm_role.capitalize()
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Invalid password for {role_display} role."
+            )
+    else:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials. Please verify your role, email, and password."
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please select a role or enter your email."
         )
 
     if not user.is_active:

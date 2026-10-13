@@ -60,18 +60,45 @@ def sync_table_columns():
                     conn.execute(text("ALTER TABLE inspections ADD COLUMN inspector_remark TEXT"))
                 if "verified_at" not in existing_cols:
                     conn.execute(text("ALTER TABLE inspections ADD COLUMN verified_at TIMESTAMP"))
+                if "defects_status" not in existing_cols:
+                    conn.execute(text("ALTER TABLE inspections ADD COLUMN defects_status VARCHAR(50) DEFAULT 'open'"))
+                if "defects_completed_at" not in existing_cols:
+                    conn.execute(text("ALTER TABLE inspections ADD COLUMN defects_completed_at TIMESTAMP"))
 
         if "inspection_items" in inspector.get_table_names():
             item_cols = {c["name"] for c in inspector.get_columns("inspection_items")}
             with engine.begin() as conn:
                 if "inspector_remark" not in item_cols:
                     conn.execute(text("ALTER TABLE inspection_items ADD COLUMN inspector_remark TEXT"))
+                if "is_fixed" not in item_cols:
+                    conn.execute(text("ALTER TABLE inspection_items ADD COLUMN is_fixed BOOLEAN DEFAULT FALSE"))
+                if "fixed_at" not in item_cols:
+                    conn.execute(text("ALTER TABLE inspection_items ADD COLUMN fixed_at TIMESTAMP"))
+                if "fixed_by" not in item_cols:
+                    conn.execute(text("ALTER TABLE inspection_items ADD COLUMN fixed_by VARCHAR(255)"))
+                if "fixed_remark" not in item_cols:
+                    conn.execute(text("ALTER TABLE inspection_items ADD COLUMN fixed_remark TEXT"))
 
         if "rpm_records" in inspector.get_table_names():
             rpm_cols = {c["name"] for c in inspector.get_columns("rpm_records")}
             with engine.begin() as conn:
                 if "rpm_date" not in rpm_cols:
                     conn.execute(text("ALTER TABLE rpm_records ADD COLUMN rpm_date VARCHAR(50)"))
+                if "maintenance_carried_by" not in rpm_cols:
+                    conn.execute(text("ALTER TABLE rpm_records ADD COLUMN maintenance_carried_by VARCHAR(255)"))
+                if "inspected_by" not in rpm_cols:
+                    conn.execute(text("ALTER TABLE rpm_records ADD COLUMN inspected_by VARCHAR(255)"))
+                # Backfill submitters from inspections if available
+                if "inspections" in inspector.get_table_names():
+                    conn.execute(text("""
+                        UPDATE rpm_records r
+                        SET 
+                            maintenance_carried_by = COALESCE(r.maintenance_carried_by, i.maintenance_carried_by),
+                            inspected_by = COALESCE(r.inspected_by, i.inspected_by)
+                        FROM inspections i
+                        WHERE LOWER(TRIM(REPLACE(r.room_or_area, 'Room', ''))) = LOWER(TRIM(REPLACE(i.room_number, 'Room', '')))
+                          AND (r.maintenance_carried_by IS NULL OR r.inspected_by IS NULL)
+                    """))
     except Exception as e:
         print(f"[Warning] Failed to sync table columns: {e}")
 

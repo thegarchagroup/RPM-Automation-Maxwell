@@ -74,5 +74,7 @@ Thumbs.db
 /path_finder.py
 alter_db.py
 refreshtoken.py
+DATABASE_DOCUMENTATION.md
+DATA_MIGRATION_DOCUMENTATION.md
 
 

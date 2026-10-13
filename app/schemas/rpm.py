@@ -16,6 +16,8 @@ class RpmRecordBase(BaseModel):
     housekeeping: Optional[str] = None
     inspection_status: str = "Pending"
     inspection_date: Optional[str] = None
+    maintenance_carried_by: Optional[str] = None
+    inspected_by: Optional[str] = None
     remarks: Optional[str] = None
     sort_order: int = 0
 
@@ -34,6 +36,8 @@ class RpmRecordUpdate(BaseModel):
     housekeeping: Optional[str] = None
     inspection_status: Optional[str] = None
     inspection_date: Optional[str] = None
+    maintenance_carried_by: Optional[str] = None
+    inspected_by: Optional[str] = None
     remarks: Optional[str] = None
     sort_order: Optional[int] = None
 
